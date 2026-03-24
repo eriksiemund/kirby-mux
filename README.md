@@ -2,7 +2,7 @@
 
 A [Kirby](https://getkirby.com) plugin to upload video and audio files to [Mux](https://mux.com).
 
-> **Fork Notice**: This is a fork of [robinscholz/kirby-mux](https://github.com/robinscholz/kirby-mux) with additional features and Vue 3 support.
+> **Fork Notice**: This is a fork of [dev-ofty/kirby-mux](https://github.com/dev-ofty/kirby-mux) which is a fork of [robinscholz/kirby-mux](https://github.com/robinscholz/kirby-mux) with additional features.
 
 ## Installation
 
@@ -13,7 +13,7 @@ Download and copy this repository to `/site/plugins/kirby-mux`.
 ### Git submodule
 
 ```
-git submodule add https://github.com/dev-ofty/kirby-mux.git site/plugins/kirby-mux
+git submodule add https://github.com/eriksiemund/kirby-mux.git site/plugins/kirby-mux
 ```
 
 ### Composer
@@ -25,11 +25,11 @@ Since this package is not on Packagist, you need to add the repository to your `
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/dev-ofty/kirby-mux"
+      "url": "https://github.com/eriksiemund/kirby-mux"
     }
   ],
   "require": {
-    "devofty/kirby-mux": "dev-main"
+    "eriksiemund/kirby-mux": "dev-main"
   }
 }
 ```
@@ -158,7 +158,7 @@ return [
 
 ## What's New in This Fork
 
-This fork includes several enhancements over the original:
+The fork of dev-ofty includes several enhancements over the original of robinscholz:
 
 1. **Audio Support**: Upload and stream audio files (MP3, etc.) in addition to videos
 2. **Video Dimension Analysis**: Automatically extracts and stores video dimensions and aspect ratios using getID3
@@ -167,6 +167,10 @@ This fork includes several enhancements over the original:
 5. **Improved Error Handling**: Better error handling and user feedback
 6. **Flexible Installation**: Automatic detection of different Kirby installation structures (standard, public folder, composer-managed)
 7. **Configurable `.env` Path**: Set a custom path for your environment file via plugin options
+
+This fork includes several enhancements over the fork of dev-ofty:
+
+...
 
 ## Caveats
 
@@ -207,3 +211,4 @@ MIT
 
 - Original plugin by [Robin Scholz](https://github.com/robinscholz)
 - Fork with additional features by [Dev Ofty](https://github.com/dev-ofty)
+- Fork with additional features by [Erik Siemund](https://github.com/eriksiemund)

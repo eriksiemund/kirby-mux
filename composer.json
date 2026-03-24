@@ -1,6 +1,6 @@
 {
-  "name": "devofty/kirby-mux",
-  "description": "Upload videos directly to mux @forked from robinscholz/kirby-mux which allows video analysis for dimensions and audio upload with Mux + Mp4.",
+  "name": "eriksiemund/kirby-mux",
+  "description": "Upload videos to MUX from the Kirby CMS panel. @forked from robinscholz/kirby-mux and dev-ofty/kirby-mux",
   "type": "kirby-plugin",
   "keywords": [
     "kirby",
@@ -9,12 +9,12 @@
     "stream"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/dev-ofty/kirby-mux#readme",
+  "homepage": "https://github.com/eriksiemund/kirby-mux#readme",
   "authors": [
     {
-      "name": "Dev ofty",
-      "email": "dev@ofty.ch",
-      "homepage": "https://ofty.ch"
+      "name": "Erik Siemund",
+      "email": "mail@eriksiemund.com",
+      "homepage": "https://eriksiemund.com"
     }
   ],
   "require": {
