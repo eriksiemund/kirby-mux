@@ -316,57 +316,25 @@ Kirby::plugin('robinscholz/kirby-mux', [
             if($file->type() === 'video') {
                 $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
                 $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
+                $aspectRatio = isset($ThisFileInfo['video']['resolution_x']) && isset($ThisFileInfo['video']['resolution_y']) ? $resolutionX / $resolutionY : '';
+            }
+
+            // Asset ID
+            $assetId = '';
+            if ($result->getData()->getId()) {
+              $assetId = $result->getData()->getId();
+            } else {
+              return;
             }
 
             try {
                 $file = $file->update([
                     'mux' => $result->getData(),
-                    'resolutionX' => $resolutionX,
-                    'resolutionY' => $resolutionY,
-                    'resAspect' => $result->getData()->getAspectRatio()
+                    'asset_id' => $assetId,
+                    'resolution_x' => $resolutionX,
+                    'resolution_y' => $resolutionY,
+                    'aspect_ratio' => $aspectRatio
                 ]);
-
-                // Wait for the asset to become ready...
-                if ($result->getData()->getStatus() !== 'ready') {
-                    $maxAttempts = 300; // Maximum 300 seconds (5 minutes) wait time
-                    $attempts = 0;
-                    while ($attempts < $maxAttempts) {
-                        $waitingAsset = $assetsApi->getAsset($result->getData()->getId());
-                        if (!$waitingAsset || !$waitingAsset->getData() || $waitingAsset->getData()->getStatus() !== 'ready') {
-                            sleep(1);
-                            $attempts++;
-                        } else {
-                            // Only generate thumbnail for video files
-                            if ($file->type() === 'video') {
-                                $playbackIds = $result->getData()->getPlaybackIds();
-                                if ($playbackIds && count($playbackIds) > 0) {
-                                    $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg";
-                                    $imagedata = @file_get_contents($url);
-
-                                    if ($imagedata !== false && $file->parent() && $file->parent()->root()) {
-                                        F::write($file->parent()->root() . '/' . $file->name() . '-thumbnail.jpg', $imagedata);
-                                    }
-                                }
-                            }
-
-                            $file = $file->update([
-                                'mux' => $waitingAsset->getData()
-                            ]);
-
-                            // Optionally download video for disk space optimization
-                            if (option('robinscholz.kirby-mux.optimizeDiskSpace', false) && $file->type() === 'video') {
-                                $lowUrl = $file->muxUrlLow();
-                                if ($lowUrl && $file->parent() && $file->parent()->root()) {
-                                    $videodata = @file_get_contents($lowUrl);
-                                    if ($videodata !== false) {
-                                        F::write($file->parent()->root() . '/' . $file->name() . '.mp4', $videodata);
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
             } catch (Exception $e) {
                 throw new Exception($e->getMessage());
             }
@@ -445,93 +413,400 @@ Kirby::plugin('robinscholz/kirby-mux', [
                 throw new Exception($e->getMessage());
             }
         },
-        'file.replace:after' => function (Kirby\Cms\File $newFile, Kirby\Cms\File $oldFile) {
-            if (!in_array($newFile->type(), ['video','audio'])) {
-                return;
+        // 'file.replace:after' => function (Kirby\Cms\File $newFile, Kirby\Cms\File $oldFile) {
+        //     if (!in_array($newFile->type(), ['video','audio'])) {
+        //         return;
+        //     }
+
+        //     // Authentication setup
+        //     $assetsApi = KirbyMux\Auth::assetsApi();
+        //     if (!$assetsApi) {
+        //         return;
+        //     }
+
+        //     // Upload new file to mux
+        //     $result = KirbyMux\Methods::upload($assetsApi, $newFile->url(), $newFile->type());
+        //     if (!$result || !$result->getData()) {
+        //         return;
+        //     }
+
+        //     // Save mux data
+        //     $getID3 = new getID3;
+        //     // Analyze file and store returned data in $ThisFileInfo
+        //     $ThisFileInfo = $getID3->analyze($newFile->root());
+
+        //     // Resolution is rather the width and height to calculate the aspect-ratio from get ID3 vendor
+        //     $resolutionX = '';
+        //     $resolutionY = '';
+
+        //     // Return the width and height for video files
+        //     if($newFile->type() === 'video') {
+        //         $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
+        //         $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
+        //     }
+
+        //     // Save playback Id
+        //     try {
+        //         $newFile = $newFile->update([
+        //             'mux' => $result->getData(),
+        //             'resolutionX' => $resolutionX,
+        //             'resolutionY' => $resolutionY,
+        //             'resAspect' => $result->getData()->getAspectRatio()
+        //         ]);
+
+        //         // Wait for the asset to become ready...
+        //         if ($result->getData()->getStatus() !== 'ready') {
+        //             $maxAttempts = 300; // Maximum 300 seconds (5 minutes) wait time
+        //             $attempts = 0;
+        //             while ($attempts < $maxAttempts) {
+        //                 $waitingAsset = $assetsApi->getAsset($result->getData()->getId());
+        //                 if (!$waitingAsset || !$waitingAsset->getData() || $waitingAsset->getData()->getStatus() !== 'ready') {
+        //                     sleep(1);
+        //                     $attempts++;
+        //                 } else {
+        //                     // Only generate thumbnail for video files
+        //                     if ($newFile->type() === 'video') {
+        //                         $playbackIds = $result->getData()->getPlaybackIds();
+        //                         if ($playbackIds && count($playbackIds) > 0) {
+        //                             $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg?time=0";
+        //                             $imagedata = @file_get_contents($url);
+
+        //                             if ($imagedata !== false && $newFile->parent() && $newFile->parent()->root()) {
+        //                                 F::write($newFile->parent()->root() . '/' . $newFile->name() . '-thumbnail.jpg', $imagedata);
+        //                             }
+        //                         }
+        //                     }
+
+        //                     $newFile = $newFile->update([
+        //                         'mux' => $waitingAsset->getData()
+        //                     ]);
+
+        //                     // Optionally download video for disk space optimization
+        //                     if (option('robinscholz.kirby-mux.optimizeDiskSpace', false) && $newFile->type() === 'video') {
+        //                         $lowUrl = $newFile->muxUrlLow();
+        //                         if ($lowUrl && $newFile->parent() && $newFile->parent()->root()) {
+        //                             $videodata = @file_get_contents($lowUrl);
+        //                             if ($videodata !== false) {
+        //                                 F::write($newFile->parent()->root() . '/' . $newFile->name() . '.mp4', $videodata);
+        //                             }
+        //                         }
+        //                     }
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     } catch (Exception $e) {
+        //         throw new Exception($e->getMessage());
+        //     }
+        // }
+    ],
+    'api' => [
+      'routes' => [
+        [
+          'pattern' => 'webhooks/mux',
+          'method' => 'POST',
+          'auth'    => false,
+          'action' => function () {
+            kirbylog('--------------------------');
+            // kirbylog('1');
+            $body = file_get_contents('php://input');
+            $header = $_SERVER['HTTP_MUX_SIGNATURE'] ?? '';
+
+            if (!$header) {
+              header('HTTP/1.1 400 Bad Request');
+              return ['status' => 'missing signature'];
             }
 
-            // Authentication setup
-            $assetsApi = KirbyMux\Auth::assetsApi();
-            if (!$assetsApi) {
-                return;
+            // kirbylog('2');
+
+            // Split header into parts: t=timestamp,v1=hash
+            $parts = explode(',', $header);
+            if (count($parts) < 2) {
+              header('HTTP/1.1 400 Bad Request');
+              return ['status' => 'invalid signature format'];
             }
 
-            // Upload new file to mux
-            $result = KirbyMux\Methods::upload($assetsApi, $newFile->url(), $newFile->type());
-            if (!$result || !$result->getData()) {
-                return;
+            // kirbylog('3');
+
+            // Strip prefixes
+            $timestamp = str_replace('t=', '', $parts[0]);
+            $signature = str_replace('v1=', '', $parts[1]);
+
+            // Build payload: timestamp + '.' + body
+            $payload = $timestamp . '.' . $body;
+
+            // Get your secret from Kirby config or env
+            $secret = env('MUX_WEBHOOK_SECRET');
+
+            if (!$secret) {
+              header('HTTP/1.1 401 Unauthorized');
+              return ['status' => 'missing secret'];
             }
 
-            // Save mux data
-            $getID3 = new getID3;
-            // Analyze file and store returned data in $ThisFileInfo
-            $ThisFileInfo = $getID3->analyze($newFile->root());
+            // kirbylog('4');
 
-            // Resolution is rather the width and height to calculate the aspect-ratio from get ID3 vendor
-            $resolutionX = '';
-            $resolutionY = '';
+            $expected = hash_hmac('sha256', $payload, $secret);
 
-            // Return the width and height for video files
-            if($newFile->type() === 'video') {
-                $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
-                $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
+            if (!hash_equals($expected, $signature)) {
+              header('HTTP/1.1 401 Unauthorized');
+              return ['status' => 'invalid signature'];
             }
 
-            // Save playback Id
+            // kirbylog('5');
+
+            // Signature verified, proceed with handling
+            $payloadData = json_decode($body, true);
+
+            if (($payloadData['type'] ?? '') !== 'video.asset.ready') {
+              return ['status' => 'ignored'];
+            }
+
+            kirbylog('6');
+
+            $assetId = $payloadData['data']['id'] ?? null;
+            if (!$assetId) {
+              return ['status' => 'missing asset id'];
+            }
+
+            kirbylog('7');
+
+            // kirbylog($assetId);
+
+            // Find Kirby file by asset_id
+            $file = site()->index()->files()->filter(function ($f) use ($assetId) {
+                return $f->asset_id()->value() === $assetId
+                    && $f->template() === 'mux-video';
+            })->first();
+            if (!$file) {
+              return ['status' => 'file not found'];
+            }
+
+            kirbylog('8');
+
+            $assetData = $payloadData['data'];
+
+            // playback IDs
+            $playbackIds = $assetData['playback_ids'] ?? [];
+
+            // video track
+            $videoTrack = array_values(array_filter(
+                $assetData['tracks'] ?? [],
+                fn($t) => $t['type'] === 'video'
+            ))[0] ?? null;
+
+            kirbylog('9');
+
+            kirbylog(print_r($playbackIds[0]['id'], true));
+            kirbylog(print_r($assetData['status'], true));
+
+            kirby()->impersonate('kirby');
+            
+            // store data in Kirby file
             try {
-                $newFile = $newFile->update([
-                    'mux' => $result->getData(),
-                    'resolutionX' => $resolutionX,
-                    'resolutionY' => $resolutionY,
-                    'resAspect' => $result->getData()->getAspectRatio()
+                $file = $file->update([
+                    'playback_id' => $playbackIds[0]['id'] ?? null,
+                    'status'      => $assetData['status'] ?? null
                 ]);
-
-                // Wait for the asset to become ready...
-                if ($result->getData()->getStatus() !== 'ready') {
-                    $maxAttempts = 300; // Maximum 300 seconds (5 minutes) wait time
-                    $attempts = 0;
-                    while ($attempts < $maxAttempts) {
-                        $waitingAsset = $assetsApi->getAsset($result->getData()->getId());
-                        if (!$waitingAsset || !$waitingAsset->getData() || $waitingAsset->getData()->getStatus() !== 'ready') {
-                            sleep(1);
-                            $attempts++;
-                        } else {
-                            // Only generate thumbnail for video files
-                            if ($newFile->type() === 'video') {
-                                $playbackIds = $result->getData()->getPlaybackIds();
-                                if ($playbackIds && count($playbackIds) > 0) {
-                                    $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg?time=0";
-                                    $imagedata = @file_get_contents($url);
-
-                                    if ($imagedata !== false && $newFile->parent() && $newFile->parent()->root()) {
-                                        F::write($newFile->parent()->root() . '/' . $newFile->name() . '-thumbnail.jpg', $imagedata);
-                                    }
-                                }
-                            }
-
-                            $newFile = $newFile->update([
-                                'mux' => $waitingAsset->getData()
-                            ]);
-
-                            // Optionally download video for disk space optimization
-                            if (option('robinscholz.kirby-mux.optimizeDiskSpace', false) && $newFile->type() === 'video') {
-                                $lowUrl = $newFile->muxUrlLow();
-                                if ($lowUrl && $newFile->parent() && $newFile->parent()->root()) {
-                                    $videodata = @file_get_contents($lowUrl);
-                                    if ($videodata !== false) {
-                                        F::write($newFile->parent()->root() . '/' . $newFile->name() . '.mp4', $videodata);
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
             } catch (Exception $e) {
                 throw new Exception($e->getMessage());
             }
-        }
+
+            kirbylog('10');
+
+            $playbackId = $assetData['playback_ids'][0]['id'] ?? null;
+            if ($playbackId) {
+              kirbylog('11');
+                $thumbnailUrl = "https://image.mux.com/{$playbackId}/thumbnail.jpg?time=0";
+                $thumbnailData = @file_get_contents($thumbnailUrl);
+
+                if ($thumbnailData !== false && $file->parent()) {
+
+                kirbylog('12');
+                    $thumbFilename = $file->name() . '-thumbnail.jpg';
+                    // $thumbPath = $file->parent()->root() . '/' . $thumbFilename;
+                    // F::write($thumbPath, $thumbnailData);
+
+                    kirbylog('13');
+                    // kirbylog(print_r($thumbFilename, true));
+                    // kirbylog(print_r($thumbPath, true));
+                    // // Save the thumbnail as a Kirby file and link it to the video
+                    // $posterFile = $file->parent()->createFile([
+                    //     'source'   => $thumbPath,
+                    //     'filename' => $thumbFilename,
+                    //     'template' => 'image'
+                    // ]);
+
+                    $tmpFile = tmpfile();
+                    $tmpPath = stream_get_meta_data($tmpFile)['uri'];
+
+                    file_put_contents($tmpPath, $thumbnailData);
+
+                    $page = $file->parent();
+
+                    if ($existing = $page->file($thumbFilename)) {
+                        $existing->delete();
+                    }
+
+                    $posterFile = $page->createFile([
+                        'source'   => $tmpPath,
+                        'filename' => $thumbFilename,
+                        'template' => 'image'
+                    ]);
+
+
+                    
+
+                    // $posterFileUploaded = $page->createFile([
+                    //     'source'   => $posterFile['tmp_name'],
+                    //     'filename' => $posterFilename,
+                    //     'template' => 'image'
+                    // ]);
+
+                    // $video->update([
+                    //     $posterFieldName => $posterFileUploaded->id(),
+                    //     'isposterrequired' => 0
+                    // ]);
+
+                    kirbylog('14');
+
+                    if ($posterFile) {
+                      kirbylog('15');
+                      $file->update([
+                        'poster' => $posterFile->id()
+                        ]);
+                        kirbylog('16');
+                    }
+
+                }
+            }
+
+            kirby()->impersonate(null);
+
+            // if ($playbackIds && count($playbackIds) > 0) {
+            //     $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg";
+            //     $imagedata = @file_get_contents($url);
+
+            //     if ($imagedata !== false && $file->parent() && $file->parent()->root()) {
+            //         F::write($file->parent()->root() . '/' . $file->name() . '-thumbnail.jpg', $imagedata);
+            //     }
+            // }
+
+            // try {
+            //     // Wait for the asset to become ready...
+            //     if ($result->getData()->getStatus() !== 'ready') {
+            //         $maxAttempts = 300; // Maximum 300 seconds (5 minutes) wait time
+            //         $attempts = 0;
+            //         while ($attempts < $maxAttempts) {
+            //             $waitingAsset = $assetsApi->getAsset($result->getData()->getId());
+            //             if (!$waitingAsset || !$waitingAsset->getData() || $waitingAsset->getData()->getStatus() !== 'ready') {
+            //                 sleep(1);
+            //                 $attempts++;
+            //             } else {
+            //                 // Only generate thumbnail for video files
+            //                 if ($file->type() === 'video') {
+            //                     $playbackIds = $result->getData()->getPlaybackIds();
+            //                     if ($playbackIds && count($playbackIds) > 0) {
+            //                         $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg";
+            //                         $imagedata = @file_get_contents($url);
+
+            //                         if ($imagedata !== false && $file->parent() && $file->parent()->root()) {
+            //                             F::write($file->parent()->root() . '/' . $file->name() . '-thumbnail.jpg', $imagedata);
+            //                         }
+            //                     }
+            //                 }
+            //                 break;
+            //             }
+            //         }
+            //     }
+            // } catch (Exception $e) {
+            //     throw new Exception($e->getMessage());
+            // }
+          }
+        ]
+      ]
     ]
+    // 'api' => [
+    //   'routes' => [
+    //     [
+    //       'pattern' => 'webhooks/mux',
+    //       'method' => 'POST',
+    //       'auth'    => false,
+    //       'action' => function () {
+    //         $logFile = __DIR__ . '/logs/mux-debug.log';
+
+    //         $body = file_get_contents('php://input');
+    //         $header = $_SERVER['HTTP_MUX_SIGNATURE'] ?? '';
+
+    //         if (!$header) {
+    //           header('HTTP/1.1 400 Bad Request');
+    //           return ['status' => 'missing signature'];
+    //         }
+
+    //         // Split header into parts: t=timestamp,v1=hash
+    //         $parts = explode(',', $header);
+    //         if (count($parts) < 2) {
+    //           header('HTTP/1.1 400 Bad Request');
+    //           return ['status' => 'invalid signature format'];
+    //         }
+
+    //         // Strip prefixes
+    //         $timestamp = str_replace('t=', '', $parts[0]);
+    //         $signature = str_replace('v1=', '', $parts[1]);
+
+    //         // Build payload: timestamp + '.' + body
+    //         $payload = $timestamp . '.' . $body;
+
+    //         // Get your secret from Kirby config or env
+    //         $secret = env('MUX_WEBHOOK_SECRET');
+
+    //         if (!$secret) {
+    //           header('HTTP/1.1 401 Unauthorized');
+    //           return ['status' => 'missing secret'];
+    //         }
+
+    //         $expected = hash_hmac('sha256', $payload, $secret);
+
+    //         if (!hash_equals($expected, $signature)) {
+    //           header('HTTP/1.1 401 Unauthorized');
+    //           return ['status' => 'invalid signature'];
+    //         }
+
+    //         // Signature verified, proceed with handling
+    //         $payloadData = json_decode($body, true);
+
+    //         if (($payloadData['type'] ?? '') !== 'video.asset.ready') {
+    //           return ['status' => 'ignored'];
+    //         }
+
+    //         $assetId = $payloadData['data']['id'] ?? null;
+    //         if (!$assetId) {
+    //           return ['status' => 'missing asset id'];
+    //         }
+
+    //         // Find Kirby file by asset_id
+    //         $file = $site->files()->findBy('asset_id', $assetId);
+    //         if (!$file) {
+    //           return ['status' => 'file not found'];
+    //         }
+
+    //         $videoTrack = array_values(array_filter(
+    //           $payloadData['data']['tracks'] ?? [],
+    //           fn($t) => $t['type'] === 'video'
+    //         ))[0] ?? null;
+
+    //         $file->update([
+    //           'asset_id' => $assetId ?? null,
+    //           'playback_id' => $payloadData['data']['playback_ids'][0]['id'] ?? null,
+    //           'width' => $videoTrack['max_width'] ?? null,
+    //           'height' => $videoTrack['max_height'] ?? null,
+    //           'aspect_ratio' => $videoTrack ? ($videoTrack['max_width'] / $videoTrack['max_height']) : null
+    //         ]);
+
+    //         return ['status' => 'ok'];
+    //       }
+    //     ]
+    //   ]
+    // ]
 ]);
 
 /**
