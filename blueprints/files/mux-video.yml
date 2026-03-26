@@ -6,6 +6,46 @@ accept:
   mime: video/*
   type: video
 
+image:
+  query: file.poster.toFile
+
 fields:
   mux:
     type: hidden
+  asset_id:
+    label: Asset ID
+    type: text
+    disabled: true
+    width: 1/2
+  playback_id:
+    label: Playback ID
+    type: text
+    disabled: true
+    width: 1/4
+  status:
+    type: text
+    disabled: true
+    width: 1/4
+  resolution_x:
+    label: Width
+    type: number
+    disabled: true
+    width: 1/4
+  resolution_y:
+    label: Height
+    type: number
+    disabled: true
+    width: 1/4
+  aspect_ratio:
+    label: Aspect Ratio
+    type: text
+    disabled: true
+    width: 1/4
+  poster:
+    type: files
+    multiple: false
+    layout: cards
+    size: large
+    width: 1/4
+    image:
+      ratio: 16/9
