@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Kirby Mux Plugin
  *
@@ -56,18 +57,20 @@ Kirby::plugin('robinscholz/kirby-mux', [
         'blocks/mux-video' => __DIR__ . '/blueprints/blocks/mux-video.yml',
         'files/mux-audio' => __DIR__ . '/blueprints/files/mux-audio.yml',
         'blocks/mux-audio' => __DIR__ . '/blueprints/blocks/mux-audio.yml'
-	],
+    ],
     'fileMethods' => [
         'muxPlaybackId' => function () {
             if (!$this->mux()) {
                 return null;
             }
             $muxData = json_decode($this->mux());
-            if (!$muxData ||
+            if (
+                !$muxData ||
                 !isset($muxData->playback_ids) ||
                 !is_array($muxData->playback_ids) ||
                 !isset($muxData->playback_ids[0]) ||
-                !isset($muxData->playback_ids[0]->id)) {
+                !isset($muxData->playback_ids[0]->id)
+            ) {
                 return null;
             }
             return $muxData->playback_ids[0]->id;
@@ -78,19 +81,21 @@ Kirby::plugin('robinscholz/kirby-mux', [
             }
 
             $muxData = json_decode($this->mux());
-            if (!$muxData ||
+            if (
+                !$muxData ||
                 !isset($muxData->id) ||
                 !isset($muxData->playback_ids) ||
                 !is_array($muxData->playback_ids) ||
                 !isset($muxData->playback_ids[0]) ||
-                !isset($muxData->playback_ids[0]->id)) {
+                !isset($muxData->playback_ids[0]->id)
+            ) {
                 return null;
             }
 
             $assetId = $muxData->id;
             $playbackId = $muxData->playback_ids[0]->id;
             $preparingRenditions = (isset($muxData->status) && $muxData->status === 'preparing') ||
-                                   (isset($muxData->static_renditions) && isset($muxData->static_renditions->status) && $muxData->static_renditions->status !== 'ready');
+                (isset($muxData->static_renditions) && isset($muxData->static_renditions->status) && $muxData->static_renditions->status !== 'ready');
 
             if ($preparingRenditions) {
                 // Authenticate
@@ -133,19 +138,21 @@ Kirby::plugin('robinscholz/kirby-mux', [
             }
 
             $muxData = json_decode($this->mux());
-            if (!$muxData ||
+            if (
+                !$muxData ||
                 !isset($muxData->id) ||
                 !isset($muxData->playback_ids) ||
                 !is_array($muxData->playback_ids) ||
                 !isset($muxData->playback_ids[0]) ||
-                !isset($muxData->playback_ids[0]->id)) {
+                !isset($muxData->playback_ids[0]->id)
+            ) {
                 return null;
             }
 
             $assetId = $muxData->id;
             $playbackId = $muxData->playback_ids[0]->id;
             $preparingRenditions = (isset($muxData->status) && $muxData->status === 'preparing') ||
-                                   (isset($muxData->static_renditions) && isset($muxData->static_renditions->status) && $muxData->static_renditions->status !== 'ready');
+                (isset($muxData->static_renditions) && isset($muxData->static_renditions->status) && $muxData->static_renditions->status !== 'ready');
 
             if ($preparingRenditions) {
                 // Authenticate
@@ -182,10 +189,10 @@ Kirby::plugin('robinscholz/kirby-mux', [
             $static_renditions = isset($muxData->static_renditions) ? $muxData->static_renditions : null;
 
             return ($static_renditions &&
-                    $static_renditions->status === 'ready' &&
-                    isset($static_renditions->files) &&
-                    is_array($static_renditions->files) &&
-                    count($static_renditions->files) > 1)
+                $static_renditions->status === 'ready' &&
+                isset($static_renditions->files) &&
+                is_array($static_renditions->files) &&
+                count($static_renditions->files) > 1)
                 ? "https://stream.mux.com/" . $playbackId . "/high.mp4"
                 : "https://stream.mux.com/" . $playbackId . "/capped-1080p.mp4";
         },
@@ -287,7 +294,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
     ],
     'hooks' => [
         'file.create:after' => function (Kirby\Cms\File $file) {
-            if (!in_array($file->type(), ['video','audio'])) {
+            if (!in_array($file->type(), ['video', 'audio'])) {
                 return;
             }
 
@@ -313,7 +320,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
             $ThisFileInfo = $getID3->analyze($file->root());
 
             // Return the width and height for video files
-            if($file->type() === 'video') {
+            if ($file->type() === 'video') {
                 $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
                 $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
                 $aspectRatio = isset($ThisFileInfo['video']['resolution_x']) && isset($ThisFileInfo['video']['resolution_y']) ? $resolutionX / $resolutionY : '';
@@ -322,9 +329,9 @@ Kirby::plugin('robinscholz/kirby-mux', [
             // Asset ID
             $assetId = '';
             if ($result->getData()->getId()) {
-              $assetId = $result->getData()->getId();
+                $assetId = $result->getData()->getId();
             } else {
-              return;
+                return;
             }
 
             try {
@@ -340,7 +347,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
             }
         },
         'file.delete:before' => function (Kirby\Cms\File $file) {
-            if (!in_array($file->type(), ['video','audio'])) {
+            if (!in_array($file->type(), ['video', 'audio'])) {
                 return;
             }
 
@@ -384,7 +391,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
             }
         },
         'file.replace:before' => function (Kirby\Cms\File $file, Kirby\Filesystem\File $upload) {
-            if (!in_array($upload->type(), ['video','audio'])) {
+            if (!in_array($upload->type(), ['video', 'audio'])) {
                 return;
             }
 
@@ -414,7 +421,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
             }
         },
         'file.replace:after' => function (Kirby\Cms\File $newFile, Kirby\Cms\File $oldFile) {
-            if (!in_array($newFile->type(), ['video','audio'])) {
+            if (!in_array($newFile->type(), ['video', 'audio'])) {
                 return;
             }
 
@@ -440,7 +447,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
             $resolutionY = '';
 
             // Return the width and height for video files
-            if($newFile->type() === 'video') {
+            if ($newFile->type() === 'video') {
                 $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
                 $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
             }
@@ -501,124 +508,120 @@ Kirby::plugin('robinscholz/kirby-mux', [
         }
     ],
     'api' => [
-      'routes' => [
-        [
-          'pattern' => 'webhooks/mux',
-          'method' => 'POST',
-          'auth'    => false,
-          'action' => function () {
-            $body = file_get_contents('php://input');
-            $header = $_SERVER['HTTP_MUX_SIGNATURE'] ?? '';
+        'routes' => [
+            [
+                'pattern' => 'webhooks/mux',
+                'method' => 'POST',
+                'auth'    => false,
+                'action' => function () {
+                    $body = file_get_contents('php://input');
+                    $header = $_SERVER['HTTP_MUX_SIGNATURE'] ?? '';
 
-            if (!$header) {
-              header('HTTP/1.1 400 Bad Request');
-              return ['status' => 'missing signature'];
-            }
-
-            // Split header into parts: t=timestamp,v1=hash
-            $parts = explode(',', $header);
-            if (count($parts) < 2) {
-              header('HTTP/1.1 400 Bad Request');
-              return ['status' => 'invalid signature format'];
-            }
-
-            // Strip prefixes
-            $timestamp = str_replace('t=', '', $parts[0]);
-            $signature = str_replace('v1=', '', $parts[1]);
-
-            // Build payload: timestamp + '.' + body
-            $payload = $timestamp . '.' . $body;
-
-            // Get your secret from Kirby config or env
-            $secret = env('MUX_WEBHOOK_SECRET');
-
-            if (!$secret) {
-              header('HTTP/1.1 401 Unauthorized');
-              return ['status' => 'missing secret'];
-            }
-
-            $expected = hash_hmac('sha256', $payload, $secret);
-
-            if (!hash_equals($expected, $signature)) {
-              header('HTTP/1.1 401 Unauthorized');
-              return ['status' => 'invalid signature'];
-            }
-
-            // Signature verified, proceed with handling
-            $payloadData = json_decode($body, true);
-
-            if (($payloadData['type'] ?? '') !== 'video.asset.ready') {
-              return ['status' => 'ignored'];
-            }
-
-            $assetId = $payloadData['data']['id'] ?? null;
-            if (!$assetId) {
-              return ['status' => 'missing asset id'];
-            }
-
-            // Find Kirby file by asset_id
-            $file = site()->index()->files()->filter(function ($f) use ($assetId) {
-                return $f->asset_id()->value() === $assetId
-                    && $f->template() === 'mux-video';
-            })->first();
-            if (!$file) {
-              return ['status' => 'file not found'];
-            }
-
-            $assetData = $payloadData['data'];
-
-            // playback IDs
-            $playbackIds = $assetData['playback_ids'] ?? [];
-
-            kirby()->impersonate('kirby');
-            
-            // store data in Kirby file
-            try {
-                $file = $file->update([
-                    'playback_id' => $playbackIds[0]['id'] ?? null,
-                    'status'      => $assetData['status'] ?? null
-                ]);
-            } catch (Exception $e) {
-                throw new Exception($e->getMessage());
-            }
-
-            $playbackId = $assetData['playback_ids'][0]['id'] ?? null;
-            if ($playbackId) {
-                $thumbnailUrl = "https://image.mux.com/{$playbackId}/thumbnail.jpg?time=0";
-                $thumbnailData = @file_get_contents($thumbnailUrl);
-
-                if ($thumbnailData !== false && $file->parent()) {
-                    $thumbFilename = $file->name() . '-thumbnail.jpg';
-
-                    $tmpFile = tmpfile();
-                    $tmpPath = stream_get_meta_data($tmpFile)['uri'];
-
-                    file_put_contents($tmpPath, $thumbnailData);
-
-                    $page = $file->parent();
-
-                    if ($existing = $page->file($thumbFilename)) {
-                        $existing->delete();
+                    if (!$header) {
+                        header('HTTP/1.1 400 Bad Request');
+                        return ['status' => 'missing signature'];
                     }
 
-                    $posterFile = $page->createFile([
-                        'source'   => $tmpPath,
-                        'filename' => $thumbFilename,
-                        'template' => 'image'
-                    ]);
+                    // Split header into parts: t=timestamp,v1=hash
+                    $parts = explode(',', $header);
+                    if (count($parts) < 2) {
+                        header('HTTP/1.1 400 Bad Request');
+                        return ['status' => 'invalid signature format'];
+                    }
 
-                    if ($posterFile) {
-                      $file->update([
-                        'poster' => $posterFile->id()
+                    // Strip prefixes
+                    $timestamp = str_replace('t=', '', $parts[0]);
+                    $signature = str_replace('v1=', '', $parts[1]);
+
+                    // Build payload: timestamp + '.' + body
+                    $payload = $timestamp . '.' . $body;
+
+                    // Get your secret from Kirby config or env
+                    $secret = env('MUX_WEBHOOK_SECRET');
+                    if (!$secret) {
+                        header('HTTP/1.1 401 Unauthorized');
+                        return ['status' => 'missing secret'];
+                    }
+
+                    $expected = hash_hmac('sha256', $payload, $secret);
+                    if (!hash_equals($expected, $signature)) {
+                        header('HTTP/1.1 401 Unauthorized');
+                        return ['status' => 'invalid signature'];
+                    }
+
+                    // Signature verified, proceed with handling
+                    $payloadData = json_decode($body, true);
+                    if (($payloadData['type'] ?? '') !== 'video.asset.ready') {
+                        return ['status' => 'ignored'];
+                    }
+                    $assetData = $payloadData['data'];
+
+                    $assetId = $payloadData['data']['id'] ?? null;
+                    if (!$assetId) {
+                        return ['status' => 'missing asset id'];
+                    }
+
+                    // Find Kirby file by asset_id
+                    $file = site()->index()->files()->filter(function ($f) use ($assetId) {
+                        return $f->asset_id()->value() === $assetId
+                            && $f->template() === 'mux-video';
+                    })->first();
+                    if (!$file) {
+                        return ['status' => 'file not found'];
+                    }
+
+                    // playback IDs
+                    $playbackIds = $assetData['playback_ids'] ?? [];
+
+                    kirby()->impersonate('kirby');
+
+                    // store data in Kirby file
+                    try {
+                        $file = $file->update([
+                            'playback_id' => $playbackIds[0]['id'] ?? null,
+                            'status'      => $assetData['status'] ?? null
                         ]);
+                    } catch (Exception $e) {
+                        throw new Exception($e->getMessage());
                     }
-                }
-            }
 
-            kirby()->impersonate(null);
-          }
+                    $playbackId = $assetData['playback_ids'][0]['id'] ?? null;
+                    if ($playbackId) {
+                        $thumbnailUrl = "https://image.mux.com/{$playbackId}/thumbnail.jpg?time=0";
+                        $thumbnailData = @file_get_contents($thumbnailUrl);
+
+                        if ($thumbnailData !== false && $file->parent()) {
+                            $thumbFilename = $file->name() . '-thumbnail.jpg';
+
+                            $tmpFile = tmpfile();
+                            $tmpPath = stream_get_meta_data($tmpFile)['uri'];
+
+                            file_put_contents($tmpPath, $thumbnailData);
+
+                            $page = $file->parent();
+
+                            if ($existing = $page->file($thumbFilename)) {
+                                $existing->delete();
+                            }
+
+                            $posterFile = $page->createFile([
+                                'source'   => $tmpPath,
+                                'filename' => $thumbFilename,
+                                'template' => 'image'
+                            ]);
+
+                            if ($posterFile) {
+                                $file->update([
+                                    'poster' => $posterFile->id()
+                                ]);
+                            }
+                        }
+                    }
+
+                    kirby()->impersonate(null);
+                }
+            ]
         ]
-      ]
     ]
 ]);
 
