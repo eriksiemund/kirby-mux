@@ -22,7 +22,8 @@
     "getkirby/composer-installer": "^1.2",
     "muxinc/mux-php": "^5.0",
     "vlucas/phpdotenv": "^5.4",
-    "james-heinrich/getid3": "^1.9"
+    "james-heinrich/getid3": "^1.9",
+    "johannschopplich/kirbylog": "^1.4"
   },
   "autoload": {
     "psr-4": {
