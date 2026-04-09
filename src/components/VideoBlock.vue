@@ -7,19 +7,10 @@
     @open="open"
     @update="update"
   >
-    <VideoPlayer
-      v-if="src"
-      :src="src"
-      :thumb="thumb"
-      :aspect-ratio="aspectRatio"
-      :width="videoWidth"
-      :height="videoHeight"
-    />
   </k-block-figure>
 </template>
 
 <script>
-import VideoPlayer from "./VideoPlayer.vue";
 
 export default {
   name: "VideoBlock",
