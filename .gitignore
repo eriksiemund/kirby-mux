@@ -2,11 +2,13 @@
 .claude
 codebase.md
 settings.local.jsonwith
+
 # OS files
 .DS_Store
 
 # npm modules
 /node_modules
+/package-lock.json
 
 # Parcel cache folder
 .cache
@@ -23,3 +25,10 @@ settings.local.jsonwith
 # Composer vendor folder
 /vendor/
 .claude/settings.local.json
+/composer.lock
+
+# Kirby CMS
+/site/plugins
+
+# Logs
+/logs
