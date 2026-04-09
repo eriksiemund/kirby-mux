@@ -4,12 +4,12 @@ fields:
   audio:
     label: Audio
     type: files
+    required: true
     multiple: false
+    min: 1
     query: page.files.template('mux-audio')
     uploads:
       template: mux-audio
-    min: 1
-    required: true
   caption:
     label: Caption
     type: writer
