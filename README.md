@@ -35,6 +35,7 @@ Since this package is not on Packagist, you need to add the repository to your `
 ```
 
 Then run:
+
 ```bash
 composer update
 ```
@@ -55,6 +56,7 @@ This installs the required PHP dependencies (Mux PHP SDK, dotenv, getID3).
 If you're using a public folder structure (where your web root is `/public` for security), the plugin will automatically detect and work with this setup. The autoloader will be found in the correct location.
 
 Example structure:
+
 ```
 /your-project/
 ├── public/              ← Web root
@@ -73,11 +75,11 @@ Example structure:
 
 Add a `.env` file to your Kirby installation with the following properties:
 
-| Key              | Type      | Description |
-| ---------------- | --------- | ----------- |
-| MUX_TOKEN_ID     | `String`  | Your Mux API Access Token ID |
+| Key              | Type      | Description                      |
+| ---------------- | --------- | -------------------------------- |
+| MUX_TOKEN_ID     | `String`  | Your Mux API Access Token ID     |
 | MUX_TOKEN_SECRET | `String`  | Your Mux API Access Token Secret |
-| MUX_DEV          | `Boolean` | Enable development mode |
+| MUX_DEV          | `Boolean` | Enable development mode          |
 
 #### MUX_TOKEN_ID
 
@@ -169,6 +171,10 @@ The fork of dev-ofty includes several enhancements over the original of robinsch
 7. **Configurable `.env` Path**: Set a custom path for your environment file via plugin options
 
 This fork includes several enhancements over the fork of dev-ofty:
+
+1. **Webhooks**: Replace pulling with Webhooks for video status changes.
+2. **Panel Block**: Add visual Kirby CMS block preview.
+3. **Teaser Video**: Add option for local teaser video.
 
 ...
 
