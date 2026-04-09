@@ -450,58 +450,25 @@ Kirby::plugin('robinscholz/kirby-mux', [
             if ($newFile->type() === 'video') {
                 $resolutionX = isset($ThisFileInfo['video']['resolution_x']) ? $ThisFileInfo['video']['resolution_x'] : '';
                 $resolutionY = isset($ThisFileInfo['video']['resolution_y']) ? $ThisFileInfo['video']['resolution_y'] : '';
+                $aspectRatio = isset($ThisFileInfo['video']['resolution_x']) && isset($ThisFileInfo['video']['resolution_y']) ? $resolutionX / $resolutionY : '';
             }
 
-            // Save playback Id
+            // Asset ID
+            $assetId = '';
+            if ($result->getData()->getId()) {
+                $assetId = $result->getData()->getId();
+            } else {
+                return;
+            }
+
             try {
                 $newFile = $newFile->update([
                     'mux' => $result->getData(),
-                    'resolutionX' => $resolutionX,
-                    'resolutionY' => $resolutionY,
-                    'resAspect' => $result->getData()->getAspectRatio()
+                    'asset_id' => $assetId,
+                    'resolution_x' => $resolutionX,
+                    'resolution_y' => $resolutionY,
+                    'aspect_ratio' => $aspectRatio
                 ]);
-
-                // Wait for the asset to become ready...
-                if ($result->getData()->getStatus() !== 'ready') {
-                    $maxAttempts = 300; // Maximum 300 seconds (5 minutes) wait time
-                    $attempts = 0;
-                    while ($attempts < $maxAttempts) {
-                        $waitingAsset = $assetsApi->getAsset($result->getData()->getId());
-                        if (!$waitingAsset || !$waitingAsset->getData() || $waitingAsset->getData()->getStatus() !== 'ready') {
-                            sleep(1);
-                            $attempts++;
-                        } else {
-                            // Only generate thumbnail for video files
-                            if ($newFile->type() === 'video') {
-                                $playbackIds = $result->getData()->getPlaybackIds();
-                                if ($playbackIds && count($playbackIds) > 0) {
-                                    $url = "https://image.mux.com/" . $playbackIds[0]->getId() . "/thumbnail.jpg?time=0";
-                                    $imagedata = @file_get_contents($url);
-
-                                    if ($imagedata !== false && $newFile->parent() && $newFile->parent()->root()) {
-                                        F::write($newFile->parent()->root() . '/' . $newFile->name() . '-thumbnail.jpg', $imagedata);
-                                    }
-                                }
-                            }
-
-                            $newFile = $newFile->update([
-                                'mux' => $waitingAsset->getData()
-                            ]);
-
-                            // Optionally download video for disk space optimization
-                            if (option('robinscholz.kirby-mux.optimizeDiskSpace', false) && $newFile->type() === 'video') {
-                                $lowUrl = $newFile->muxUrlLow();
-                                if ($lowUrl && $newFile->parent() && $newFile->parent()->root()) {
-                                    $videodata = @file_get_contents($lowUrl);
-                                    if ($videodata !== false) {
-                                        F::write($newFile->parent()->root() . '/' . $newFile->name() . '.mp4', $videodata);
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
             } catch (Exception $e) {
                 throw new Exception($e->getMessage());
             }

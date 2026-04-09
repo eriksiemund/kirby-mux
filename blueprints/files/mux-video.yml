@@ -9,43 +9,59 @@ accept:
 image:
   query: file.poster.toFile
 
-fields:
-  mux:
-    type: hidden
-  asset_id:
-    label: Asset ID
-    type: text
-    disabled: true
-    width: 1/2
-  playback_id:
-    label: Playback ID
-    type: text
-    disabled: true
-    width: 1/4
-  status:
-    type: text
-    disabled: true
-    width: 1/4
-  resolution_x:
-    label: Width
-    type: number
-    disabled: true
-    width: 1/4
-  resolution_y:
-    label: Height
-    type: number
-    disabled: true
-    width: 1/4
-  aspect_ratio:
-    label: Aspect Ratio
-    type: text
-    disabled: true
-    width: 1/4
-  poster:
-    type: files
-    multiple: false
-    layout: cards
-    size: large
-    width: 1/4
-    image:
-      ratio: 16/9
+columns:
+  - width: 1/2
+    fields:
+      mux:
+        type: hidden
+      asset_id:
+        label: Asset ID
+        type: text
+        disabled: true
+      playback_id:
+        label: Playback ID
+        type: text
+        disabled: true
+      status:
+        type: text
+        width: 1/3
+        disabled: true
+      gap_status:
+        type: gap
+        width: 2/3
+      resolution_x:
+        label: Width
+        type: number
+        width: 1/3
+        disabled: true
+      resolution_y:
+        label: Height
+        type: number
+        width: 1/3
+        disabled: true
+      aspect_ratio:
+        label: Aspect Ratio
+        type: text
+        width: 1/3
+        disabled: true
+  - width: 1/2
+    fields:
+      poster:
+        label: Poster Image
+        type: files
+        layout: cards
+        size: huge
+        multiple: false
+        image:
+          ratio: 16/9
+      teaser:
+        label: Teaser Video
+        type: files
+        layout: cards
+        size: huge
+        multiple: false
+        uploads:
+          template: teaser
+        image:
+          ratio: 16/9
+          back: transparent

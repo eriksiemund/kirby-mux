@@ -4,25 +4,24 @@ fields:
   video:
     label: field.blocks.video.name
     type: files
-    query: page.files.template('mux-video')
-    uploads:
-      template: mux-video
+    layout: cards
+    size: full
+    required: true
     multiple: false
     min: 1
     max: 1
-    required: true
-    layout: cards
-    size: full
+    query: page.files.template('mux-video')
+    uploads:
+      template: mux-video
     image:
       ratio: 16/9
-      back: black
   caption:
     label: field.blocks.video.caption
     type: text
-    inline: true
     width: 1/2
+    inline: true
   allow_sound:
     label: Play sound with video
     type: toggle
-    width: 1/2
+    width: 1/4
     default: true

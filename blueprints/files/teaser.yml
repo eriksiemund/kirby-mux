@@ -1,0 +1,15 @@
+title: Teaser
+image:
+  query: file.poster.toFile
+  back: pattern
+  align: top
+
+accept:
+  mime: video/*
+  type: video
+
+fields:
+  poster:
+    label: Poster
+    type: files
+    multiple: false
