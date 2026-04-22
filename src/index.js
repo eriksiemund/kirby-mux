@@ -1,9 +1,7 @@
-import VideoBlock from "./components/VideoBlock.vue";
-import AudioBlock from "./components/AudioBlock.vue";
+import VideoBlock from './components/VideoBlock.vue'
 
-window.panel.plugin("robinscholz/kirby-mux", {
+window.panel.plugin('robinscholz/kirby-mux', {
   blocks: {
-    "mux-video": VideoBlock,
-    "mux-audio": AudioBlock,
+    'mux-video': VideoBlock,
   },
-});
+})

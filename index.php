@@ -55,8 +55,6 @@ Kirby::plugin('robinscholz/kirby-mux', [
     'blueprints' => [
         'files/mux-video' => __DIR__ . '/blueprints/files/mux-video.yml',
         'blocks/mux-video' => __DIR__ . '/blueprints/blocks/mux-video.yml',
-        'files/mux-audio' => __DIR__ . '/blueprints/files/mux-audio.yml',
-        'blocks/mux-audio' => __DIR__ . '/blueprints/blocks/mux-audio.yml'
     ],
     'fileMethods' => [
         'muxPlaybackId' => function () {
@@ -294,7 +292,7 @@ Kirby::plugin('robinscholz/kirby-mux', [
     ],
     'hooks' => [
         'file.create:after' => function (Kirby\Cms\File $file) {
-            if (!in_array($file->type(), ['video', 'audio'])) {
+            if (!in_array($file->type(), ['video'])) {
                 return;
             }
 
