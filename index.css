@@ -1,0 +1,1 @@
+.mux-video__container{box-shadow:var(--item-shadow);border-radius:var(--rounded);overflow:hidden}mux-video{width:100%;display:block;aspect-ratio:16 / 9}.audio-player{position:relative;display:flex}audio{width:100%;cursor:pointer}

@@ -13,10 +13,6 @@ settings.local.jsonwith
 # Parcel cache folder
 .cache
 
-# Build files
-/index.js
-/index.css
-
 # Environment files
 .env
 .env.local
