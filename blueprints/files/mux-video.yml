@@ -64,4 +64,4 @@ columns:
           template: teaser
         image:
           ratio: 16/9
-          back: transparent
+          back: pattern

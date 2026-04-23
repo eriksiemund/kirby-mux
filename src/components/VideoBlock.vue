@@ -36,6 +36,9 @@ export default {
     }
   },
   computed: {
+    location() {
+      return this.content.location || 'local'
+    },
     video() {
       return this.content.video?.[0] || {}
     },
@@ -59,6 +62,9 @@ export default {
       }
     },
     videoWidth() {
+      if (this.location === 'external') {
+        return this.content.resolution_x || null
+      }
       return (
         this.fileData?.content?.resolutionx ||
         this.mux?.max_stored_resolution?.split('x')?.[0] ||
@@ -66,6 +72,9 @@ export default {
       )
     },
     videoHeight() {
+      if (this.location === 'external') {
+        return this.content.resolution_y || null
+      }
       return (
         this.fileData?.content?.resolutiony ||
         this.mux?.max_stored_resolution?.split('x')?.[1] ||
@@ -85,6 +94,9 @@ export default {
       return this.fileData?.content?.asset_id || this.fileData?.content?.assetid
     },
     playbackId() {
+      if (this.location === 'external') {
+        return this.content.playback_id || ''
+      }
       return (
         this.fileData?.content?.playback_id ||
         this.fileData?.content?.playbackid
@@ -96,44 +108,75 @@ export default {
     },
   },
   watch: {
+    location(newLocation) {
+      // Clear data when switching locations
+      if (newLocation === 'external') {
+        this.fileData = null
+        this.mux = null
+      } else if (newLocation === 'local') {
+        // Trigger the video watcher to reload file data
+        this.$watch(
+          () => this.video.link,
+          (link) => {
+            this.loadVideoData(link)
+          },
+          { immediate: true },
+        )
+      }
+    },
     'video.link': {
       handler(link) {
-        if (link && this.$api) {
-          this.$api
-            .get(link)
-            .then((file) => {
-              // Guard against missing or invalid file data
-              if (!file || !file.content) {
-                console.error('Invalid file data received')
-                return
-              }
-
-              this.fileData = file
-
-              // Guard against missing or invalid mux data
-              if (!file.content.mux) {
-                console.error('Missing mux data in file content')
-                return
-              }
-
-              try {
-                const parsedMux = JSON.parse(file.content.mux)
-                // Validate that parsed data has expected structure
-                if (!parsedMux || typeof parsedMux !== 'object') {
-                  console.error('Invalid mux data structure')
-                  return
-                }
-                this.mux = parsedMux
-              } catch (error) {
-                console.error('Failed to parse mux JSON:', error)
-              }
-            })
-            .catch((error) => {
-              console.error('Failed to load video metadata:', error)
-            })
+        // Only fetch file data for local videos
+        if (this.location !== 'local' || !link || !this.$api) {
+          return
         }
+        this.loadVideoData(link)
       },
       immediate: true,
+    },
+    'content.playback_id'() {
+      // Trigger reactivity when external playback ID changes
+      this.$forceUpdate()
+    },
+  },
+  methods: {
+    loadVideoData(link) {
+      if (!link || !this.$api) {
+        return
+      }
+
+      this.$api
+        .get(link)
+        .then((file) => {
+          // Guard against missing or invalid file data
+          if (!file || !file.content) {
+            console.error('Invalid file data received')
+            return
+          }
+
+          this.fileData = file
+
+          // Guard against missing or invalid mux data
+          if (!file.content.mux) {
+            console.error('Missing mux data in file content')
+            return
+          }
+
+          try {
+            const parsedMux = JSON.parse(file.content.mux)
+            // Validate that parsed data has expected structure
+            if (!parsedMux || typeof parsedMux !== 'object') {
+              console.error('Invalid mux data structure')
+              return
+            }
+            this.mux = parsedMux
+          } catch (error) {
+            console.error('Failed to parse mux JSON:', error)
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to load video metadata:', error)
+        })
     },
   },
 }
