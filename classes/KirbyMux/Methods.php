@@ -13,7 +13,7 @@ class Methods
             "input" => $input,
             "playback_policy" => [MuxPhp\Models\PlaybackPolicy::_PUBLIC],
             "static_renditions" => $staticRenditions,
-            "video_quality" => "plus"
+            "video_quality" => "premium"
         ]);
         $result = $assetsApi->createAsset($createAssetRequest);
         return $result;
